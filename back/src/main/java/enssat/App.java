@@ -6,6 +6,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.sql.ResultSet;
@@ -16,6 +17,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CorsHandler;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,8 +25,8 @@ public class App extends AbstractVerticle {
 
     private Map<UUID, Game> games = new HashMap<>();
     private Map<UUID, User> users = new HashMap<>();
-    private JsonObject mySQLClientConfig = new JsonObject().put("host", "localhost");
     private SQLClient mySQLClient;
+    private SQLConnection sqlConnection;
 
 
     private void createTestData() {
@@ -36,34 +38,6 @@ public class App extends AbstractVerticle {
         games.put(game.getId(), game);
         game = new Game("GT Sport", 10000);
         games.put(game.getId(), game);
-        User user = new User("Lyes","AICI","laici@enssat.fr");
-        users.put(user.getId(),user);
-        user = new User("Mikael","LUCAS","mlucas@enssat.fr");
-        users.put(user.getId(),user);
-        user = new User("Alex","HUANG","ahuang@enssat.fr");
-        users.put(user.getId(),user);
-        user = new User("Emmanuel","TRAN","etran@enssat.fr");
-        users.put(user.getId(),user);
-        mySQLClientConfig.put("port",3306);
-        mySQLClientConfig.put("database","inside");
-        mySQLClientConfig.put("sslMode","prefer");
-        mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
-        mySQLClient.getConnection(res -> {
-            if(res.succeeded()){
-                SQLConnection sqlConnection = res.result();
-            }
-            else{
-                System.err.println("Failed to connect");
-            }
-        });
-        /**mySQLClient.query("CREATE TABLE users (ID int, firstname VARCHAR(20))",res -> {
-            if(res.succeeded()){
-                ResultSet result = res.result();
-            }
-            else{
-                System.err.println("Loul");
-            }
-        });**/
     }
 
     private void getAllGames(RoutingContext context) {
@@ -92,7 +66,32 @@ public class App extends AbstractVerticle {
 
     @Override
     public void start(final Future<Void> future) {
+        mySQLClient = MySQLClient.createShared(vertx, config().getJsonObject("database"));
+        mySQLClient.getConnection(res -> {
+            if(res.succeeded()){
+                sqlConnection = res.result();
+                sqlConnection.query("SELECT * FROM Users",re -> {
+                    if(res.succeeded()){
+                        ResultSet result = re.result();
+                        List<JsonObject> results = result.getRows();
+                        User user;
+                        for(JsonObject row : results){
+                            user = new User(UUID.fromString(row.getString("idUsers")),row.getString("firstname"),row.getString("lastname"),row.getString("mail"));
+                            users.put(user.getId(),user);
+                            System.out.println(users.get(user.getId()).getFirstname());
+                        }
+                    }
+                    else{
+                        System.err.println("Loul");
+                    }
+                });
+            }
+            else{
+                System.err.println("Failed to connect");
+            }
+        });
         createTestData();
+
         Router router = Router.router(vertx);
 
         router.route().handler(CorsHandler.create("*"));
