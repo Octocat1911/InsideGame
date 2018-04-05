@@ -4,14 +4,16 @@ import java.util.UUID;
 
 public class User {
     private UUID id;
-    private String firstname;
-    private String lastname;
+    private String username;
+    private String password;
+    private String birthday;
     private String email;
 
-    public User(String firstname, String lastname, String email) {
-        this.id = UUID.randomUUID();
-        this.firstname = firstname;
-        this.lastname = lastname;
+    public User(UUID id,String username, String password, String birthday, String email) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.birthday = birthday;
         this.email = email;
     }
 
@@ -19,20 +21,28 @@ public class User {
         return id;
     }
 
-    public String getFirstname() {
-        return firstname;
+    public String getUsername() {
+        return username;
     }
 
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getLastname() {
-        return lastname;
+    public String getPassword() {
+        return password;
     }
 
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(String birthday) {
+        this.birthday = birthday;
     }
 
     public String getEmail() {
