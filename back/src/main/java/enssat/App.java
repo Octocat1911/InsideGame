@@ -70,19 +70,18 @@ public class App extends AbstractVerticle {
         mySQLClient.getConnection(res -> {
             if(res.succeeded()){
                 sqlConnection = res.result();
-                sqlConnection.query("SELECT * FROM Users",re -> {
+                sqlConnection.query("SELECT * FROM User",re -> {
                     if(res.succeeded()){
                         ResultSet result = re.result();
                         List<JsonObject> results = result.getRows();
                         User user;
                         for(JsonObject row : results){
-                            user = new User(UUID.fromString(row.getString("idUsers")),row.getString("firstname"),row.getString("lastname"),row.getString("mail"));
+                            user = new User(UUID.fromString(row.getString("id")) ,row.getString("username"),row.getString("password"), row.getString("birthday"), row.getString("email"));
                             users.put(user.getId(),user);
-                            System.out.println(users.get(user.getId()).getFirstname());
                         }
                     }
                     else{
-                        System.err.println("Loul");
+                        System.err.println("Error fetching data");
                     }
                 });
             }
